@@ -1,0 +1,87 @@
+<?php namespace App\Controllers;
+
+/*
+                             Default we have a predefined lists:
+
+         $this->styles_default = array(
+            'Bootstrap' => ['url' => 'bootstrap.css', 'dependencies' => '', 'position' => 1, 'where' => 'header'],
+            'Buttons' => ['url' => 'buttons.css', 'dependencies' => 'Bulma', 'position' => 2, 'where' => 'footer'],
+            'Bulma' => ['url' => 'bulma.css', 'dependencies' => '', 'position' => 3, 'where' => 'footer'],
+            'Love' => ['url' => 'love.css', 'dependencies' => 'Bootstrap', 'position' => 0, 'where' => 'header'],
+        );
+
+                But you can create your array and you MUST to pass here:
+                                    $myArray  = array(
+
+    'Style1' => ['url' => 'style1.css', 'dependencies' => '', 'position' => 1, 'where' => 'header'],
+    'Style2' => ['url' => 'style2.css', 'dependencies' => 'style1', 'position' => 2, 'where' => 'header'],
+    'Style3' => ['url' => 'style3.css', 'dependencies' => '', 'position' => 3, 'where' => 'footer'],
+    'Style4' => ['url' => 'style4.css', 'dependencies' => 'style3', 'position' => 0, 'where' => 'footer'],
+                                            );
+
+                 $this->css->load($myArray,'position','all','everywhere');
+
+                            Se bellow for custom parameters;
+
+ */
+
+
+use CodeIgniter\Controller;
+use App\Libraries\Enqueue;
+
+class Dashboard extends Controller
+{
+    function __construct()
+    {
+        $this->css = new Enqueue();
+    }
+
+    public function index()
+    {
+
+        /* get all styles */
+        foreach ($this->css->load($myArray, 'position', 'all', 'everywhere') as $css) { /* or sample ($this->css->load() and you edit predefined array)
+            print_r($css);
+        }
+
+        /*
+         * get all for header (you can change with 'footer')
+         */
+        foreach ($this->css->load('', '', '', 'header') as $css) {
+            print_r($css);
+        }
+
+        /*
+         * get all parents (you can change with 'childrens')
+         */
+        foreach ($this->css->load('', '', 'parents', '') as $css) {
+            print_r($css);
+        }
+
+        /*
+         * make a sort by a key,default position
+         */
+        foreach ($this->css->load('', 'position', '', '') as $css) {
+            print_r($css);
+        }
+
+        /*
+         * get parents for header (or childrens, you change with 'childrens')
+         */
+        foreach ($this->css->load('', '', 'parents', 'header') as $css) {
+            print_r($css);
+        }
+        
+        /*
+         * And now, i think you got the ideea, you can pass as variable to viewer (header, or footer eg)
+         */
+        $data = [
+            'css' => $this->css->load()
+        ];
+        echo view("views/header", $data);
+        /*
+         * and in header.php you can make a foreach with this $css and create html attribute
+         * using this key and values 
+         */
+    }
+}
