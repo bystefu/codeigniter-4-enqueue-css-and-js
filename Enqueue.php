@@ -4,8 +4,8 @@
  * Basic Library for including styles and javascript in you CodeIgniter 4 project
  * You can set order for Css and Js,and also dependencies
  * CodeIgniter_Root/application/libraries/enqueue.php
- * Version: 1.0
- * (testing with styles, is not completed for js)
+ * Version: 1.1
+ * (testing with styles, is not completed for js but i think is OK)
  */
 class Enqueue
 {
@@ -13,6 +13,7 @@ class Enqueue
     public $styles;
     public $path_js;
     public $path_css;
+    public $styles_default;
 
     public function __construct($path_js = 'public/js/', $path_css = 'public/css/')
     {
@@ -20,10 +21,20 @@ class Enqueue
         $this->styles = array();
         $this->path_js = (string)$path_js;
         $this->path_css = (string)$path_css;
+        /* set default css */
+        $this->styles_default = array(
+            'Bootstrap' => ['url' => 'bootstrap.css', 'dependencies' => '', 'position' => 1, 'where' => 'header'],
+            'Buttons' => ['url' => 'buttons.css', 'dependencies' => 'Bulma', 'position' => 2, 'where' => 'footer'],
+            'Bulma' => ['url' => 'bulma.css', 'dependencies' => '', 'position' => 3, 'where' => 'footer'],
+            'Love' => ['url' => 'love.css', 'dependencies' => 'Bootstrap', 'position' => 0, 'where' => 'header'],
+        );
     }
 
-    public function load(&$array, $sortBy = 'position', $what = 'all', $where = 'everywhere')
+    public function load($array = '', $sortBy = 'position', $what = 'all', $where = 'everywhere')
     {
+        if(!$this->checkThisArray($array)){
+            $array = $this->styles_default;
+        }
         $keepInMind = $array; /* we keep a copy from original array */
         /* first we try to sort this array */
         $this->get_all($array, $sortBy);
@@ -54,14 +65,13 @@ class Enqueue
             /* or footer ? */
             $load = $this->enqueue_footer($load);
         }
-        foreach ($load as $style) {
-            echo '<link rel="stylesheet" href="' . base_url() . '/' . $this->path_css . $style['url'] . '" />';
-            /* check if dependency is found */
+        foreach ($load as $key => $style) {
+            /* check if dependency is found,otherwise we set a new key 'error' */
             if (isset($style['dependencies']) && strlen($style['dependencies']) > 0 && !isset($keepInMind[$style['dependencies']])) {
-                $this->error(3, true);
+                $load[$key]['error'] = '&lt;!-- Loaded , but dependency not found !--&gt;';
             }
-            echo "\n";
         }
+         return $load;
     }
 
     /*
@@ -155,7 +165,7 @@ class Enqueue
     private function checkThisArray(&$array, $key = null, $dependencies = null)
     {
         if (!is_array($array) || empty($array)) {
-            return $this->error(1);
+            $array = $this->styles_default;
         }
         if ($key !== null) {
             foreach ($array as $a) {
@@ -175,7 +185,6 @@ class Enqueue
      */
     private function error($error = NULL, $noExit = NULL)
     {
-
         $msg = '';
         switch ($error) {
             case 1:
